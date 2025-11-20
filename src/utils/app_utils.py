@@ -100,184 +100,198 @@ def create_patient_report_pdf(patient_data, predictions, final_verdict, contribu
     Returns:
         BytesIO: PDF file in memory
     """
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    story = []
-    styles = getSampleStyleSheet()
-    
-    # Custom styles
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#1976d2'),
-        spaceAfter=30,
-        alignment=1  # Center
-    )
-    
-    heading_style = ParagraphStyle(
-        'CustomHeading',
-        parent=styles['Heading2'],
-        fontSize=16,
-        textColor=colors.HexColor('#424242'),
-        spaceAfter=12,
-        spaceBefore=12
-    )
-    
-    # Title
-    story.append(Paragraph("🫀 Heart Disease Diagnosis Report", title_style))
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Timestamp
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    story.append(Paragraph(f"<b>Generated:</b> {timestamp}", styles['Normal']))
-    story.append(Spacer(1, 0.2*inch))
-    
-    # Patient Information
-    story.append(Paragraph("Patient Information", heading_style))
-    patient_table_data = [['Feature', 'Value']]
-    
-    feature_names = {
-        'age': 'Age (years)',
-        'sex': 'Sex',
-        'cp': 'Chest Pain Type',
-        'trestbps': 'Resting Blood Pressure (mm Hg)',
-        'chol': 'Cholesterol (mg/dl)',
-        'fbs': 'Fasting Blood Sugar > 120 mg/dl',
-        'restecg': 'Resting ECG',
-        'thalach': 'Max Heart Rate',
-        'exang': 'Exercise Induced Angina',
-        'oldpeak': 'ST Depression',
-        'slope': 'Slope of ST Segment',
-        'ca': 'Number of Major Vessels',
-        'thal': 'Thalassemia'
-    }
-    
-    for key, value in patient_data.items():
-        display_name = feature_names.get(key, key)
-        patient_table_data.append([display_name, str(value)])
-    
-    patient_table = Table(patient_table_data, colWidths=[3*inch, 2*inch])
-    patient_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1976d2')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    
-    story.append(patient_table)
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Final Verdict
-    story.append(Paragraph("Diagnosis Result", heading_style))
-    verdict_color = colors.HexColor('#d32f2f') if 'Heart Disease' in final_verdict else colors.HexColor('#388e3c')
-    verdict_text = f'<font color="{verdict_color.hexval()}"><b>{final_verdict}</b></font>'
-    story.append(Paragraph(verdict_text, styles['Normal']))
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Model Predictions
-    story.append(Paragraph("Individual Model Predictions", heading_style))
-    pred_table_data = [['Model', 'Prediction', 'Confidence']]
-    
-    for pred in predictions:
-        pred_table_data.append([
-            pred['Model'],
-            pred['Prediction'],
-            f"{pred['Confidence']:.2%}"
-        ])
-    
-    pred_table = Table(pred_table_data, colWidths=[2*inch, 2*inch, 1.5*inch])
-    pred_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1976d2')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    
-    story.append(pred_table)
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Personalized Recommendations
-    story.append(Paragraph("Personalized Recommendations", heading_style))
-    
-    if contributions:
-        # Generate personalized recommendations based on contribution analysis
-        feature_desc = get_feature_descriptions()
-        recommendations_data = generate_personalized_recommendations(
-            patient_data, contributions, feature_desc
+    try:
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#1976d2'),
+            spaceAfter=30,
+            alignment=1  # Center
         )
         
-        recommendations_text = create_personalized_recommendations_text(
-            recommendations_data, "Patient"
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=16,
+            textColor=colors.HexColor('#424242'),
+            spaceAfter=12,
+            spaceBefore=12
         )
         
-        # Convert markdown-like text to paragraphs
-        lines = recommendations_text.strip().split('\n')
-        for line in lines:
-            if line.strip():
-                if line.startswith('🎯') or line.startswith('**') and line.endswith('**'):
-                    # Header style for main sections
-                    story.append(Paragraph(line.strip(), heading_style))
-                elif line.startswith('**') and '.' in line:
-                    # Bold for numbered recommendations
-                    clean_line = line.replace('**', '<b>').replace('**', '</b>')
-                    story.append(Paragraph(clean_line, styles['Normal']))
-                    story.append(Spacer(1, 0.1*inch))
-                elif line.startswith('   •') or line.startswith('•'):
-                    # Bullet points
-                    story.append(Paragraph(line.strip(), styles['Normal']))
-                elif line.startswith('📋') or line.startswith('⚠️') or line.startswith('🏥'):
-                    # Section headers with emojis
-                    story.append(Spacer(1, 0.2*inch))
-                    story.append(Paragraph(line.strip(), heading_style))
-                else:
-                    # Regular text
+        # Title
+        story.append(Paragraph("🫀 Heart Disease Diagnosis Report", title_style))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        story.append(Paragraph(f"<b>Generated:</b> {timestamp}", styles['Normal']))
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Patient Information
+        story.append(Paragraph("Patient Information", heading_style))
+        patient_table_data = [['Feature', 'Value']]
+        
+        feature_names = {
+            'age': 'Age (years)',
+            'sex': 'Sex',
+            'cp': 'Chest Pain Type',
+            'trestbps': 'Resting Blood Pressure (mm Hg)',
+            'chol': 'Cholesterol (mg/dl)',
+            'fbs': 'Fasting Blood Sugar > 120 mg/dl',
+            'restecg': 'Resting ECG',
+            'thalach': 'Max Heart Rate',
+            'exang': 'Exercise Induced Angina',
+            'oldpeak': 'ST Depression',
+            'slope': 'Slope of ST Segment',
+            'ca': 'Number of Major Vessels',
+            'thal': 'Thalassemia'
+        }
+        
+        for key, value in patient_data.items():
+            display_name = feature_names.get(key, key)
+            patient_table_data.append([display_name, str(value)])
+        
+        patient_table = Table(patient_table_data, colWidths=[3*inch, 2*inch])
+        patient_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1976d2')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        story.append(patient_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Final Verdict
+        story.append(Paragraph("Diagnosis Result", heading_style))
+        verdict_color = colors.HexColor('#d32f2f') if 'Heart Disease' in final_verdict else colors.HexColor('#388e3c')
+        verdict_text = f'<font color="{verdict_color.hexval()}"><b>{final_verdict}</b></font>'
+        story.append(Paragraph(verdict_text, styles['Normal']))
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Model Predictions
+        story.append(Paragraph("Individual Model Predictions", heading_style))
+        pred_table_data = [['Model', 'Prediction', 'Confidence']]
+        
+        for pred in predictions:
+            pred_table_data.append([
+                pred['Model'],
+                pred['Prediction'],
+                f"{pred['Confidence']:.2%}"
+            ])
+        
+        pred_table = Table(pred_table_data, colWidths=[2*inch, 2*inch, 1.5*inch])
+        pred_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1976d2')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        story.append(pred_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Personalized Recommendations
+        story.append(Paragraph("Personalized Recommendations", heading_style))
+        
+        if contributions:
+            try:
+                # Generate personalized recommendations based on contribution analysis
+                feature_desc = get_feature_descriptions()
+                recommendations_data = generate_personalized_recommendations(
+                    patient_data, contributions, feature_desc
+                )
+                
+                recommendations_text = create_personalized_recommendations_text(
+                    recommendations_data, "Patient"
+                )
+                
+                # Convert markdown-like text to paragraphs
+                lines = recommendations_text.strip().split('\n')
+                for line in lines:
                     if line.strip():
-                        story.append(Paragraph(line.strip(), styles['Normal']))
-    else:
-        # Fallback to general recommendations
-        if 'Heart Disease' in final_verdict:
-            recommendations = """
-            • Consult with a cardiologist immediately
-            • Monitor blood pressure and cholesterol levels regularly
-            • Adopt a heart-healthy diet (low in saturated fats and sodium)
-            • Engage in regular physical activity as recommended by your doctor
-            • Avoid smoking and limit alcohol consumption
-            • Manage stress through relaxation techniques
-            """
-        else:
-            recommendations = """
-            • Continue maintaining a healthy lifestyle
-            • Regular health check-ups (annual cardiac screening)
-            • Maintain a balanced diet and regular exercise
-            • Monitor blood pressure and cholesterol levels
-            • Avoid smoking and excessive alcohol consumption
-            """
+                        if line.startswith('🎯') or line.startswith('**') and line.endswith('**'):
+                            # Header style for main sections
+                            story.append(Paragraph(line.strip(), heading_style))
+                        elif line.startswith('**') and '.' in line:
+                            # Bold for numbered recommendations
+                            clean_line = line.replace('**', '<b>').replace('**', '</b>')
+                            story.append(Paragraph(clean_line, styles['Normal']))
+                            story.append(Spacer(1, 0.1*inch))
+                        elif line.startswith('   •') or line.startswith('•'):
+                            # Bullet points
+                            story.append(Paragraph(line.strip(), styles['Normal']))
+                        elif line.startswith('📋') or line.startswith('⚠️') or line.startswith('🏥'):
+                            # Section headers with emojis
+                            story.append(Spacer(1, 0.2*inch))
+                            story.append(Paragraph(line.strip(), heading_style))
+                        else:
+                            # Regular text
+                            if line.strip():
+                                story.append(Paragraph(line.strip(), styles['Normal']))
+            except:
+                # Fallback if personalized recommendations fail
+                contributions = None
         
-        story.append(Paragraph(recommendations, styles['Normal']))
-    
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Footer
-    footer_text = """
-    <i>Note: This report is generated by an AI-based system and should not replace professional medical advice. 
-    Please consult with a qualified healthcare provider for proper diagnosis and treatment.</i>
-    <br/><br/>
-    """
-    story.append(Paragraph(footer_text, styles['Normal']))
-    
-    # Build PDF
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
+        if not contributions:
+            # Fallback to general recommendations
+            if 'Heart Disease' in final_verdict:
+                recommendations = """
+                • Consult with a cardiologist immediately
+                • Monitor blood pressure and cholesterol levels regularly
+                • Adopt a heart-healthy diet (low in saturated fats and sodium)
+                • Engage in regular physical activity as recommended by your doctor
+                • Avoid smoking and limit alcohol consumption
+                • Manage stress through relaxation techniques
+                """
+            else:
+                recommendations = """
+                • Continue maintaining a healthy lifestyle
+                • Regular health check-ups (annual cardiac screening)
+                • Maintain a balanced diet and regular exercise
+                • Monitor blood pressure and cholesterol levels
+                • Avoid smoking and excessive alcohol consumption
+                """
+            
+            story.append(Paragraph(recommendations, styles['Normal']))
+        
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Footer
+        footer_text = """
+        <i>Note: This report is generated by an AI-based system and should not replace professional medical advice. 
+        Please consult with a qualified healthcare provider for proper diagnosis and treatment.</i>
+        <br/><br/>
+        """
+        story.append(Paragraph(footer_text, styles['Normal']))
+        
+        # Build PDF
+        doc.build(story)
+        buffer.seek(0)
+        return buffer
+        
+    except Exception as e:
+        # If PDF generation fails, create a simple text buffer with error message
+        error_buffer = io.BytesIO()
+        error_text = f"PDF Generation Error: {str(e)}\n\nPlease check that all required libraries (reportlab) are installed."
+        error_buffer.write(error_text.encode('utf-8'))
+        error_buffer.seek(0)
+        return error_buffer
 
 
 def create_feature_importance_plot(model, feature_names, model_name):

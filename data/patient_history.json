@@ -278,5 +278,77 @@
       }
     ],
     "final_verdict": "No Heart Disease"
+  },
+  {
+    "patient_id": "P20251120201433",
+    "timestamp": "2025-11-20 20:14:33",
+    "patient_data": {
+      "age": 50,
+      "sex": 1,
+      "cp": 4,
+      "trestbps": 120,
+      "chol": 200,
+      "fbs": 0,
+      "restecg": 0,
+      "thalach": 150,
+      "exang": 0,
+      "oldpeak": 1.0,
+      "slope": 1,
+      "ca": 0,
+      "thal": 3
+    },
+    "predictions": [
+      {
+        "Model": "Logistic Regression",
+        "Prediction": "Low Risk",
+        "Confidence": 0.8026770222384396
+      },
+      {
+        "Model": "Random Forest",
+        "Prediction": "High Risk",
+        "Confidence": 0.6397849462365591
+      },
+      {
+        "Model": "K-Nearest Neighbors",
+        "Prediction": "High Risk",
+        "Confidence": 0.6494600449605243
+      },
+      {
+        "Model": "Decision Tree",
+        "Prediction": "Low Risk",
+        "Confidence": 0.8253968253968254
+      },
+      {
+        "Model": "AdaBoost",
+        "Prediction": "Low Risk",
+        "Confidence": 0.6166102004462808
+      },
+      {
+        "Model": "Gradient Boosting",
+        "Prediction": "Low Risk",
+        "Confidence": 0.8579463258674647
+      },
+      {
+        "Model": "XGBoost",
+        "Prediction": "Low Risk",
+        "Confidence": 0.5532829761505127
+      },
+      {
+        "Model": "LightGBM",
+        "Prediction": "Low Risk",
+        "Confidence": 0.6272814101246679
+      },
+      {
+        "Model": "SVM",
+        "Prediction": "Low Risk",
+        "Confidence": 0.8026519293885203
+      },
+      {
+        "Model": "Ensemble",
+        "Prediction": "High Risk",
+        "Confidence": 0.6095569495655975
+      }
+    ],
+    "final_verdict": "No Heart Disease"
   }
 ]

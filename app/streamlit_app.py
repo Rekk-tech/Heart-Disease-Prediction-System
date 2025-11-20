@@ -979,7 +979,8 @@ if st.session_state.pipeline_initialized:
                                 feature_names=feature_names,
                                 model_name=selected_contrib_model,
                             )
-                        except:
+                        except Exception as e:
+                            st.warning(f"Failed to calculate contributions for PDF: {str(e)}")
                             pdf_contributions = None
 
                     pdf_buffer = create_patient_report_pdf(
@@ -988,15 +989,22 @@ if st.session_state.pipeline_initialized:
                         final_prediction_label,
                         pdf_contributions,
                     )
-                    st.download_button(
-                        label="📄 Download PDF Report",
-                        data=pdf_buffer,
-                        file_name=f"diagnosis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                        mime="application/pdf",
-                        width="stretch",
-                    )
+                    
+                    # Check if PDF was generated successfully
+                    if pdf_buffer and pdf_buffer.getvalue():
+                        st.download_button(
+                            label="📄 Download PDF Report",
+                            data=pdf_buffer,
+                            file_name=f"diagnosis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                            mime="application/pdf",
+                            help="Click to download the complete diagnosis report as PDF",
+                        )
+                    else:
+                        st.error("❌ Failed to generate PDF report. Please ensure all required libraries are installed.")
+                        
                 except Exception as e:
-                    st.warning(f"PDF generation failed: {str(e)}")
+                    st.error(f"❌ PDF generation failed: {str(e)}")
+                    st.info("💡 Make sure 'reportlab' library is installed: `pip install reportlab==4.4.4`")
 
     # ========================================================================
     # TAB 2: MODEL ANALYSIS
