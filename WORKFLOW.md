@@ -236,7 +236,7 @@ df = manager.compare_experiments()
 
 #### Live App
 ```
-🌐 https://heart-disease-diagnosis-vietai.streamlit.app
+🌐 https://heart-disease-prediction-systems.streamlit.app/
 ```
 
 **Deployment:** Streamlit Cloud (auto-deploy from GitHub)
@@ -281,7 +281,7 @@ python scripts/train_models.py
 ./scripts/run_app.sh
 
 # Or visit live app
-# https://heart-disease-diagnosis-vietai.streamlit.app
+# https://heart-disease-prediction-systems.streamlit.app/
 ```
 
 ### Use Case 4: Make Predictions
@@ -367,5 +367,4 @@ final_pred, votes, total = pipeline.get_majority_vote(predictions)
 ```
 ---
 
-**Last Updated:** September 30, 2025  
-**Team:** VietAI Learning Team - AIO2025
+
