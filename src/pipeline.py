@@ -572,11 +572,22 @@ class HeartDiseasePipeline:
         Initialize the complete pipeline
         Load models từ folder latest/ and training data for preprocessing
         """
-        # Convert to absolute path relative to project root
-        if not os.path.isabs(models_dir):
-            # Get project root (parent of src directory)
-            project_root = Path(__file__).parent.parent
-            models_dir = project_root / models_dir
+        try:
+            # Convert to absolute path relative to project root
+            if not os.path.isabs(models_dir):
+                # Get project root (parent of src directory)
+                project_root = Path(__file__).parent.parent
+                models_dir = project_root / models_dir
+            
+            # Check if models directory exists
+            if not Path(models_dir).exists():
+                print(f"❌ Models directory not found: {models_dir}")
+                print(f"📁 Available directories:")
+                parent_dir = Path(models_dir).parent
+                if parent_dir.exists():
+                    for item in parent_dir.iterdir():
+                        print(f"   - {item.name} ({'dir' if item.is_dir() else 'file'})")
+                return False
 
         print("=" * 80)
         print("🫀 Initializing Heart Disease Prediction Pipeline...")
@@ -600,21 +611,27 @@ class HeartDiseasePipeline:
         except Exception as e:
             print(f"⚠️  Could not load training data: {e}")
 
-        # Load models (models đã có preprocessor riêng, không cần fit thêm)
-        if not self.load_models(models_dir):
-            print("❌ Failed to load models")
+            # Load models (models đã có preprocessor riêng, không cần fit thêm)
+            if not self.load_models(models_dir):
+                print("❌ Failed to load models")
+                return False
+
+            # Load metrics
+            self.load_metrics(models_dir)
+
+            # Mark as fitted
+            self.is_fitted = True
+
+            print("=" * 80)
+            print(f"✅ Pipeline initialized successfully with {len(self.models)} models")
+            print("=" * 80)
+            return True
+            
+        except Exception as e:
+            print(f"❌ Pipeline initialization failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return False
-
-        # Load metrics
-        self.load_metrics(models_dir)
-
-        # Mark as fitted
-        self.is_fitted = True
-
-        print("=" * 80)
-        print(f"✅ Pipeline initialized successfully with {len(self.models)} models")
-        print("=" * 80)
-        return True
 
 
 # Global pipeline instance

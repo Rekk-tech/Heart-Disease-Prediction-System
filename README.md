@@ -162,7 +162,7 @@ Eight classification algorithms were systematically evaluated:
 
 ```bash
 # Clone repository
-git clone https://github.com/huynqhcmus/heart-disease-diagnosis.git
+git clone https://github.com/Rekk-tech/Heart-Disease-Prediction-System.git
 cd heart-disease-diagnosis
 
 # Create virtual environment

@@ -362,6 +362,8 @@ def get_user_input():
     return pd.DataFrame([user_data])[feature_order], user_data
 
 
+
+
 # ============================================================================
 # MAIN APP
 # ============================================================================
@@ -388,17 +390,31 @@ if not st.session_state.pipeline_initialized:
             "🚀 Initialize Prediction System", type="primary", width="stretch"
         ):
             with st.spinner("Loading models and initializing system..."):
-                if pipeline.initialize():
-                    st.session_state.pipeline_initialized = True
-                    st.success("✅ System initialized successfully!")
-                    try:
-                        st.rerun()
-                    except AttributeError:
-                        st.experimental_rerun()
-                else:
-                    st.error(
-                        "❌ Failed to initialize system. Please check model files."
-                    )
+                try:
+                    if pipeline.initialize():
+                        st.session_state.pipeline_initialized = True
+                        st.success("✅ System initialized successfully!")
+                        try:
+                            st.rerun()
+                        except AttributeError:
+                            st.experimental_rerun()
+                    else:
+                        st.error(
+                            "❌ Failed to initialize system. Please check model files."
+                        )
+                        st.info("""
+                        **Possible issues:**
+                        - Model files missing from deployment
+                        - Incorrect file paths
+                        - Missing dependencies
+                        
+                        **For Streamlit Cloud deployment:**
+                        Make sure all model files are committed to your repository.
+                        """)
+                        st.stop()
+                except Exception as e:
+                    st.error(f"❌ System initialization failed: {str(e)}")
+                    st.code(f"Error details: {e}")
                     st.stop()
 
 if st.session_state.pipeline_initialized:

@@ -15,9 +15,12 @@ ENV/
 .streamlit/secrets.toml
 
 # Data & Models (too large for Git)
-# Keep models folder structure but ignore .pkl files
+# Allow specific model files for deployment
 *.pkl
 *.joblib
+# But allow models in saved_models/latest/ for deployment
+!models/saved_models/latest/*.pkl
+!models/saved_models/latest/*.joblib
 
 # Logs
 logs/*.log
