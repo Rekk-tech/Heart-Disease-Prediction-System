@@ -26,7 +26,7 @@ This project builds a comprehensive heart disease prediction system using 10 dif
 # Run the application
 streamlit run app\streamlit_app.py
 
-# Access at http://localhost:8502
+# Access at http://localhost:8501
 ```
 
 ### Linux/Mac
@@ -37,7 +37,7 @@ source venv/bin/activate
 # Run the application
 ./run.sh
 
-# Access at http://localhost:8502
+# Access at http://localhost:8501
 ```
 
 ---
