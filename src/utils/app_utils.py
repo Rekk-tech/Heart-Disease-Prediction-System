@@ -364,8 +364,20 @@ def calculate_input_contribution(model, input_data, feature_names, model_name, b
         
         if has_shap and hasattr(model, 'predict_proba'):
             try:
+                # Kiểm tra kích thước input trước khi tính SHAP
+                expected_features = None
+                if hasattr(model, 'n_features_in_'):
+                    expected_features = model.n_features_in_
+                elif hasattr(model, 'coef_'):
+                    expected_features = model.coef_.shape[-1]
+                
+                # Nếu kích thước không khớp, skip SHAP
+                if expected_features and X.shape[1] != expected_features:
+                    print(f"SHAP skipped for {model_name}: input features ({X.shape[1]}) != expected ({expected_features})")
+                    raise ValueError("Feature dimension mismatch")
+                
                 # Sử dụng SHAP Explainer
-                if background_data is not None:
+                if background_data is not None and background_data.shape[1] == X.shape[1]:
                     explainer = shap.Explainer(model, background_data)
                 else:
                     # Use a small sample as background nếu không có

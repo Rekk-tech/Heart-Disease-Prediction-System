@@ -589,27 +589,27 @@ class HeartDiseasePipeline:
                         print(f"   - {item.name} ({'dir' if item.is_dir() else 'file'})")
                 return False
 
-        print("=" * 80)
-        print("🫀 Initializing Heart Disease Prediction Pipeline...")
-        print("=" * 80)
+            print("=" * 80)
+            print("🫀 Initializing Heart Disease Prediction Pipeline...")
+            print("=" * 80)
 
-        # Load training data (needed to recreate preprocessing)
-        try:
-            project_root = Path(__file__).parent.parent
-            train_data_path = project_root / "data" / "raw" / "raw_train.csv"
+            # Load training data (needed to recreate preprocessing)
+            try:
+                project_root = Path(__file__).parent.parent
+                train_data_path = project_root / "data" / "raw" / "raw_train.csv"
 
-            if train_data_path.exists():
-                train_df = pd.read_csv(train_data_path)
-                self.X_train = train_df.drop("target", axis=1)
-                self.y_train = train_df["target"]
-                print(f"✅ Loaded training data: {self.X_train.shape}")
-            else:
-                print(f"⚠️  Training data not found at {train_data_path}")
-                print(
-                    "   Pipeline will work but preprocessing may not match training exactly"
-                )
-        except Exception as e:
-            print(f"⚠️  Could not load training data: {e}")
+                if train_data_path.exists():
+                    train_df = pd.read_csv(train_data_path)
+                    self.X_train = train_df.drop("target", axis=1)
+                    self.y_train = train_df["target"]
+                    print(f"✅ Loaded training data: {self.X_train.shape}")
+                else:
+                    print(f"⚠️  Training data not found at {train_data_path}")
+                    print(
+                        "   Pipeline will work but preprocessing may not match training exactly"
+                    )
+            except Exception as e:
+                print(f"⚠️  Could not load training data: {e}")
 
             # Load models (models đã có preprocessor riêng, không cần fit thêm)
             if not self.load_models(models_dir):
